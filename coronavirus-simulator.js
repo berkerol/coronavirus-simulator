@@ -1,4 +1,7 @@
-/* global canvas ctx label addPause loop paintCircle getDistance generateRandomNumber */
+/* global createButtonGroup createModalButton createModal keyUpHandler canvas ctx label addPause loop paintCircle getDistance generateRandomNumber */
+const defaultInitialPercentages = [20, 79, 1, 0, 0, 0, 0, 0, 0, 0];
+const initialPercentages = new Array(10);
+
 const person = {
   highestDeathRate: 0.00006,
   highestInpatientRecoveryTime: 350,
@@ -18,14 +21,20 @@ const testDelay = 300;
 const testCapacity = 0.0005;
 const hospitalCapacity = 0.2;
 
-const initialPercentages = [20, 79, 1, 0, 0, 0, 0, 0, 0, 0];
-
 let testDelayCount = 0;
-const counts = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-const people = [];
+const counts = new Array(10);
+let people = [];
 
-initializePeople();
+const modalElements = [[['Healthy active %', 'percentage1', 0, 100, 'number'], ['Healthy isolated %', 'percentage2', 0, 100, 'number']], [['Infected active %', 'percentage3', 0, 100, 'number'], ['Infected isolated %', 'percentage4', 0, 100, 'number']], [['Inpatient %', 'percentage5', 0, 100, 'number'], ['Outpatient active %', 'percentage6', 0, 100, 'number']], [['Outpatient isolated %', 'percentage7', 0, 100, 'number'], ['Recovered active %', 'percentage8', 0, 100, 'number']], [['Recovered isolated %', 'percentage9', 0, 100, 'number'], ['Dead %', 'percentage10', 0, 100, 'number']]];
+const buttonElements = [['info', 'restart()', 'r', 'sync', '<u>R</u>estart'], ['info', '', 's', 'cog', '<u>S</u>ettings']];
+const buttonGroup = createButtonGroup('btn-group btn-group-lg btn-group-center', buttonElements);
+document.body.insertBefore(createModalButton(buttonGroup, 1), canvas);
+createModal(modalElements);
+
+resetInputs();
+restart();
 addPause();
+document.addEventListener('keyup', keyUpHandler);
 window.addEventListener('resize', resizeHandler);
 
 loop(function (frames) {
@@ -46,7 +55,22 @@ loop(function (frames) {
   }
 });
 
-function initializePeople () {
+function resetInputs () {
+  for (let i = 0; i < initialPercentages.length; i++) {
+    document.getElementById(`percentage${i + 1}`).value = (initialPercentages[i] = defaultInitialPercentages[i]);
+  }
+}
+
+window.save = function () {
+  for (let i = 0; i < initialPercentages.length; i++) {
+    initialPercentages[i] = document.getElementById(`percentage${i + 1}`).value;
+  }
+};
+
+function restart () {
+  testDelayCount = 0;
+  counts.fill(0);
+  people = [];
   for (let i in initialPercentages) {
     i = +i;
     for (let j = 0; j < Math.floor(initialPercentages[i] * population / 100); j++) {
